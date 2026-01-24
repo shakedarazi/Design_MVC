@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MVC Dataflow Visualizer</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://unpkg.com/cytoscape/dist/cytoscape.min.js"></script>
+</head>
+<body>
+    <header>
+        <h1>MVC Dataflow Visualizer</h1>
+        <span id="sse-status" class="status disconnected">Disconnected</span>
+        <button id="reconnect-btn" class="small-btn">Reconnect</button>
+    </header>
+
+    <div class="container">
+        <aside class="left-panel">
+            <section class="panel-section">
+                <h3>Configuration</h3>
+                <textarea id="config-text" rows="8">configs.PlusAgent
+A,B
+C
+configs.IncAgent
+C
+D</textarea>
+                <div class="btn-row">
+                    <button id="load-btn">Load Config</button>
+                    <button id="unload-btn">Unload Config</button>
+                </div>
+            </section>
+
+            <section class="panel-section">
+                <h3>Publish Message</h3>
+                <div class="input-row">
+                    <label>Topic:</label>
+                    <input type="text" id="pub-topic" value="A" placeholder="Topic">
+                </div>
+                <div class="input-row">
+                    <label>Value:</label>
+                    <input type="text" id="pub-value" value="5" placeholder="Value">
+                </div>
+                <button id="publish-btn">Publish</button>
+                <div class="btn-row quick-btns">
+                    <button id="quick-a">A = 5</button>
+                    <button id="quick-b">B = 8</button>
+                </div>
+            </section>
+
+            <section class="panel-section">
+                <h3>Topics <button id="refresh-topics" class="small-btn">↻</button></h3>
+                <ul id="topics-list"></ul>
+            </section>
+        </aside>
+
+        <main class="graph-area">
+            <div id="error-banner" class="error-banner hidden"></div>
+            <div id="graph-container"></div>
+            <div id="empty-msg" class="empty-msg hidden">No graph data. Load a config first.</div>
+        </main>
+
+        <aside class="right-panel">
+            <section class="panel-section">
+                <h3>Event Log</h3>
+                <ul id="event-log"></ul>
+            </section>
+        </aside>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
