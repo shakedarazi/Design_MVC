@@ -1,7 +1,7 @@
 # Build output
+target/
 out/
 *.class
-docs/
 
 # IDE
 .idea/
@@ -11,3 +11,14 @@ docs/
 # OS
 .DS_Store
 Thumbs.db
+
+#logs
+*.log
+logs/
+
+#tooling
+.classpath
+.project
+.settings/
+docs/
+
