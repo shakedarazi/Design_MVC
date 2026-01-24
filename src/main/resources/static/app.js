@@ -225,16 +225,10 @@
     }
 
     function connectSSE() {
-        if (eventSource) {
-            eventSource.close();
-        }
+        if (eventSource) return;
 
         eventSource = new EventSource(API.EVENTS_STREAM);
-
-        eventSource.onopen = () => {
-            updateSSEStatus(true);
-        };
-
+        updateSSEStatus(true);
         eventSource.onmessage = (e) => {
             try {
                 const event = JSON.parse(e.data);
@@ -246,10 +240,17 @@
 
         eventSource.onerror = () => {
             updateSSEStatus(false);
-            eventSource.close();
-            eventSource = null;
         };
     }
+
+    function disconnectSSE() {
+        if (eventSource) {
+            eventSource.close();
+            eventSource = null;
+        }
+        updateSSEStatus(false);
+    }
+    
 
     async function loadConfig() {
         const text = $('#config-text').value.trim();
@@ -263,6 +264,7 @@
                 addEventToLog({ ts: Date.now(), type: 'CONFIG_LOADED', from: null, value: null });
                 await renderGraph();
                 await loadTopics();
+                connectSSE();
             } else {
                 showError('Load failed: ' + (result.error || 'unknown'));
             }
@@ -274,7 +276,9 @@
     async function unloadConfig() {
         try {
             await postJson(API.CONFIG_UNLOAD, {});
+            disconnectSSE();
             addEventToLog({ ts: Date.now(), type: 'CONFIG_UNLOADED', from: null, value: null });
+
             await renderGraph();
             await loadTopics();
         } catch (err) {
@@ -287,6 +291,13 @@
             showError('Topic is required');
             return;
         }
+
+        if (!eventSource) {  // תחליף לשם האמיתי אצלך
+            showError('Cannot publish: no config loaded');
+            return;
+          }
+  
+
         try {
             await postJson(API.PUBLISH(topic), { type: 'double', value: String(value) });
         } catch (err) {
@@ -296,7 +307,6 @@
 
     function init() {
         initGraph();
-        connectSSE();
         renderGraph();
         loadTopics();
 
