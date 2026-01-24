@@ -29,7 +29,9 @@ public final class ParallelAgent implements Agent {
         this.agent = agent;
         this.queue = new ArrayBlockingQueue<>(capacity);
         this.running = true;
-        this.worker = new Thread(this::runWorker);
+
+        this.worker = new Thread(this::runWorker, "ParallelAgent-" + agent.getName());
+        this.worker.setDaemon(true);
         this.worker.start();
     }
 
@@ -42,6 +44,7 @@ public final class ParallelAgent implements Agent {
                 if (!running) {
                     break;
                 }
+                // otherwise, ignore and continue
             }
         }
     }
@@ -58,6 +61,9 @@ public final class ParallelAgent implements Agent {
 
     @Override
     public void callback(String topic, Message msg) {
+        if (!running) {
+            return;
+        }
         try {
             queue.put(new Task(topic, msg));
         } catch (InterruptedException ex) {
@@ -70,7 +76,7 @@ public final class ParallelAgent implements Agent {
         running = false;
         worker.interrupt();
         try {
-            worker.join();
+            worker.join(2000);
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
         }
