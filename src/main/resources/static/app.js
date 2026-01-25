@@ -142,13 +142,16 @@
 
             cy.elements().remove();
             cy.add(elements);
+            // Reset viewport to clean state before layout to prevent zoom accumulation
+            cy.zoom(1);
+            cy.pan({ x: 0, y: 0 });
             cy.layout({ 
                 name: 'breadthfirst',
                 directed: true,
                 spacingFactor: 1.5,
-                padding: 50
+                padding: 50,
+                fit: true
             }).run();
-            cy.fit(undefined, 50);
         } catch (err) {
             showError('Failed to load graph: ' + err.message);
         }
