@@ -76,9 +76,27 @@ public class ApiController {
         }
     }
 
+    // #region debug log helper
+    private void debugLog(String location, String message, String data) {
+        try {
+            String logPath = "c:\\Users\\shaked arazi\\Desktop\\Projects\\Design_MVC\\.cursor\\debug.log";
+            String json = String.format(
+                    "{\"location\":\"%s\",\"message\":\"%s\",\"data\":%s,\"timestamp\":%d,\"sessionId\":\"debug-session\"}%n",
+                    location, message, data, System.currentTimeMillis());
+            java.nio.file.Files.writeString(java.nio.file.Path.of(logPath), json,
+                    java.nio.file.StandardOpenOption.CREATE, java.nio.file.StandardOpenOption.APPEND);
+        } catch (Exception ignored) {
+        }
+    }
+    // #endregion
+
     @PostMapping("/config/load")
     public Map<String, Object> loadConfig(@RequestBody ConfigLoadRequest request) {
         try {
+            // #region agent log H1
+            debugLog("ApiController:loadConfig:entry", "loadConfig called", "{}");
+            // #endregion
+
             if (activeConfig != null) {
                 activeConfig.close();
                 TopicManagerSingleton.get().clear();
@@ -90,7 +108,32 @@ public class ApiController {
 
             GenericConfig gc = new GenericConfig();
             gc.setConfFile(tempFile.toString());
+            // #region agent log H2
+            debugLog("ApiController:loadConfig:beforeCreate", "About to call gc.create()", "{}");
+            // #endregion
             gc.create();
+            // #region agent log H2
+            debugLog("ApiController:loadConfig:afterCreate", "gc.create() completed", "{}");
+            // #endregion
+
+            // #region agent log H3 - Cycle detection (now enforced)
+            Graph cycleCheckGraph = new Graph();
+            cycleCheckGraph.createFromTopics();
+            boolean hasCyclesResult = cycleCheckGraph.hasCycles();
+            debugLog("ApiController:loadConfig:cycleCheck", "hasCycles check result",
+                    String.format("{\"hasCycles\":%b,\"nodeCount\":%d}", hasCyclesResult, cycleCheckGraph.size()));
+            // #endregion
+
+            // FIX: Reject config if cycles detected
+            if (hasCyclesResult) {
+                gc.close();
+                TopicManagerSingleton.get().clear();
+                // #region agent log - cycle rejected
+                debugLog("ApiController:loadConfig:cycleRejected", "Config rejected due to cycle", "{}");
+                // #endregion
+                throw new IllegalArgumentException("Config contains a cycle - cyclic dependencies are not allowed");
+            }
+
             activeConfig = gc;
 
             Topic.setListener(new TopicEventListener() {
