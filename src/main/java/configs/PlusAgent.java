@@ -46,7 +46,7 @@ public class PlusAgent implements Agent {
             hasY = true;
         }
         if (hasX && hasY) {
-            TopicManagerSingleton.get().getTopic(pubs[0]).publish(new Message(x + y));
+            TopicManagerSingleton.get().getTopic(pubs[0]).publish(new Message(x + y), getName());
         }
     }
 

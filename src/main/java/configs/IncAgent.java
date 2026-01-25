@@ -29,7 +29,7 @@ public class IncAgent implements Agent {
         if (Double.isNaN(msg.asDouble)) {
             return;
         }
-        TopicManagerSingleton.get().getTopic(pubs[0]).publish(new Message(msg.asDouble + 1));
+        TopicManagerSingleton.get().getTopic(pubs[0]).publish(new Message(msg.asDouble + 1), getName());
     }
 
     @Override

@@ -34,7 +34,8 @@ public class ApiController {
 
     public enum EventType {
         TOPIC_PUBLISH,
-        TOPIC_CLEARED
+        TOPIC_CLEARED,
+        AGENT_PUBLISH
     }
 
     private static final class EventBus {
@@ -110,6 +111,16 @@ public class ApiController {
                             EventType.TOPIC_CLEARED,
                             "T" + topicName,
                             null));
+                }
+
+                @Override
+                public void onAgentPublish(String agentName, String topicName, Message msg) {
+                    Double v = Double.isNaN(msg.asDouble) ? null : msg.asDouble;
+                    EventBus.emit(new FlowEvent(
+                            System.currentTimeMillis(),
+                            EventType.AGENT_PUBLISH,
+                            "A" + agentName,
+                            v));
                 }
             });
 

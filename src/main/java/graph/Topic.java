@@ -39,6 +39,13 @@ public class Topic {
         }
     }
 
+    public void publish(Message msg, String fromAgentName) {
+        if (listener != null && fromAgentName != null) {
+            listener.onAgentPublish(fromAgentName, name, msg);
+        }
+        publish(msg);
+    }
+
     public void addPublisher(Agent agent) {
         if (!pubs.contains(agent)) {
             pubs.add(agent);

@@ -51,7 +51,7 @@ public class BinOpAgent implements Agent {
         }
         if (hasX && hasY) {
             double r = op.apply(x, y);
-            TopicManagerSingleton.get().getTopic(outTopic).publish(new Message(r));
+            TopicManagerSingleton.get().getTopic(outTopic).publish(new Message(r), getName());
         }
     }
 
