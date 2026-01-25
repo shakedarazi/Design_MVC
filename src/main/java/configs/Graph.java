@@ -22,14 +22,14 @@ public class Graph extends ArrayList<Node> {
         Map<String, Node> nodeMap = new HashMap<>();
         Collection<Topic> topics = TopicManagerSingleton.get().getTopics();
         for (Topic topic : topics) {
-            String topicNodeName = "T" + topic.name;
+            String topicNodeName = topic.name;
             Node topicNode = nodeMap.computeIfAbsent(topicNodeName, name -> {
                 Node n = new Node(name);
                 n.setKind("TOPIC");
                 return n;
             });
             for (Agent sub : topic.subs) {
-                String agentNodeName = "A" + sub.getName();
+                String agentNodeName =sub.getName();
                 Node agentNode = nodeMap.computeIfAbsent(agentNodeName, name -> {
                     Node n = new Node(name);
                     n.setKind("AGENT");
@@ -38,7 +38,7 @@ public class Graph extends ArrayList<Node> {
                 topicNode.addEdge(agentNode);
             }
             for (Agent pub : topic.pubs) {
-                String agentNodeName = "A" + pub.getName();
+                String agentNodeName =pub.getName();
                 Node agentNode = nodeMap.computeIfAbsent(agentNodeName, name -> {
                     Node n = new Node(name);
                     n.setKind("AGENT");

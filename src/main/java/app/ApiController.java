@@ -100,7 +100,7 @@ public class ApiController {
                     EventBus.emit(new FlowEvent(
                             System.currentTimeMillis(),
                             EventType.TOPIC_PUBLISH,
-                            "T" + topicName,
+                            topicName,
                             v));
                 }
 
@@ -109,7 +109,7 @@ public class ApiController {
                     EventBus.emit(new FlowEvent(
                             System.currentTimeMillis(),
                             EventType.TOPIC_CLEARED,
-                            "T" + topicName,
+                            topicName,
                             null));
                 }
 
@@ -119,7 +119,7 @@ public class ApiController {
                     EventBus.emit(new FlowEvent(
                             System.currentTimeMillis(),
                             EventType.AGENT_PUBLISH,
-                            "A" + agentName,
+                            agentName,
                             v));
                 }
             });
