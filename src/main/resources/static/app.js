@@ -16,6 +16,7 @@
 
     let cy = null;
     let eventSource = null;
+    const topicValues = new Map();  // nodeId -> value or null
 
     const $ = (sel) => document.querySelector(sel);
     const $$ = (sel) => document.querySelectorAll(sel);
@@ -55,7 +56,7 @@
                 {
                     selector: 'node',
                     style: {
-                        'label': 'data(id)',
+                        'label': 'data(label)',
                         'text-valign': 'center',
                         'text-halign': 'center',
                         'font-size': '12px',
@@ -63,6 +64,7 @@
                         'color': '#c9d1d9',
                         'text-outline-color': '#0d1117',
                         'text-outline-width': 2,
+                        'text-wrap': 'wrap',
                         'width': 60,
                         'height': 60
                     }
@@ -135,11 +137,15 @@
 
             const elements = [];
             for (const node of data.nodes) {
-                elements.push({ data: { id: node.id, kind: node.kind } });
+                const isTopic = node.kind === 'TOPIC';
+                const label = isTopic ? (node.id + '\n—') : node.id;
+                elements.push({ data: { id: node.id, kind: node.kind, label: label } });
             }
             for (const edge of data.edges) {
                 elements.push({ data: { source: edge.from, target: edge.to } });
             }
+            // Clear topic values on graph render (fresh state)
+            topicValues.clear();
 
             cy.elements().remove();
             cy.add(elements);
@@ -196,6 +202,15 @@
             node.removeClass('active');
             edges.removeClass('active');
         }, HIGHLIGHT_DURATION);
+    }
+
+    function updateTopicValue(nodeId, value) {
+        if (!nodeId.startsWith('T')) return;  // Only topics
+        topicValues.set(nodeId, value);
+        const node = cy.getElementById(nodeId);
+        if (node.length === 0) return;
+        const displayValue = value !== null && value !== undefined ? value : '—';
+        node.data('label', nodeId + '\n' + displayValue);
     }
 
     function addEventToLog(event) {
@@ -265,6 +280,11 @@
             if (event.from) {
                 highlightNode(event.from);
             }
+
+            // Update topic value display on publish/clear events
+            if (event.type === 'TOPIC_PUBLISH' || event.type === 'TOPIC_CLEARED') {
+                updateTopicValue(event.from, event.value);
+            }
             
             await sleep(STEP_MS);
         }
@@ -306,6 +326,7 @@
         try {
             await postJson(API.CONFIG_UNLOAD, {});
             disconnectSSE();
+            topicValues.clear();
             addEventToLog({ ts: Date.now(), type: 'CONFIG_UNLOADED', from: null, value: null });
 
             await renderGraph();
