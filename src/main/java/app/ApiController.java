@@ -22,10 +22,18 @@ public class ApiController {
 
     private GenericConfig activeConfig;
 
-    public record ConfigLoadRequest(String configText) {}
-    public record PublishRequest(String type, String value) {}
-    public record FlowEvent(long ts, EventType type, String from, Double value) {}
-    public enum EventType { INPUT_PUBLISH }
+    public record ConfigLoadRequest(String configText) {
+    }
+
+    public record PublishRequest(String type, String value) {
+    }
+
+    public record FlowEvent(long ts, EventType type, String from, Double value) {
+    }
+
+    public enum EventType {
+        TOPIC_PUBLISH
+    }
 
     private static final class EventBus {
         private static final int MAX_EVENTS = 500;
@@ -73,17 +81,30 @@ public class ApiController {
                 TopicManagerSingleton.get().clear();
                 activeConfig = null;
             }
+
             Path tempFile = Files.createTempFile("config", ".txt");
             Files.writeString(tempFile, request.configText());
+
             GenericConfig gc = new GenericConfig();
             gc.setConfFile(tempFile.toString());
             gc.create();
             activeConfig = gc;
+
+            Topic.setListener((topicName, msg) -> {
+                Double v = Double.isNaN(msg.asDouble) ? null : msg.asDouble;
+                EventBus.emit(new FlowEvent(
+                        System.currentTimeMillis(),
+                        EventType.TOPIC_PUBLISH,
+                        "T" + topicName,
+                        v));
+            });
+
             List<String> topicNames = new ArrayList<>();
             for (Topic t : TopicManagerSingleton.get().getTopics()) {
                 topicNames.add(t.name);
             }
             Collections.sort(topicNames);
+
             return Map.of("ok", true, "topics", topicNames);
         } catch (Exception e) {
             return Map.of("ok", false, "error", e.getMessage());
@@ -97,22 +118,25 @@ public class ApiController {
             TopicManagerSingleton.get().clear();
             activeConfig = null;
         }
+        Topic.setListener(null);
         return Map.of("ok", true);
     }
 
     @PostMapping("/topics/{name}/publish")
     public Map<String, Object> publish(@PathVariable String name, @RequestBody PublishRequest request) {
+        if (activeConfig == null) {
+            return Map.of("ok", false, "error", "No active config loaded");
+        }
+
         Message msg;
-        Double eventValue = null;
         if ("double".equals(request.type())) {
-            double d = Double.parseDouble(request.value());
-            msg = new Message(d);
-            eventValue = d;
+            msg = new Message(Double.parseDouble(request.value()));
         } else {
             msg = new Message(request.value());
         }
+
         TopicManagerSingleton.get().getTopic(name).publish(msg);
-        EventBus.emit(new FlowEvent(System.currentTimeMillis(), EventType.INPUT_PUBLISH, "T" + name, eventValue));
+
         return Map.of("ok", true);
     }
 
@@ -130,16 +154,23 @@ public class ApiController {
     public Map<String, Object> getGraph() {
         Graph g = new Graph();
         g.createFromTopics();
+
         List<Map<String, String>> nodes = new ArrayList<>();
         List<Map<String, String>> edges = new ArrayList<>();
+
         for (Node node : g) {
             String id = node.getName();
             String kind = id.startsWith("T") ? "TOPIC" : "AGENT";
             nodes.add(Map.of("id", id, "kind", kind));
+        }
+
+        for (Node node : g) {
+            String id = node.getName();
             for (Node neighbor : node.getEdges()) {
                 edges.add(Map.of("from", id, "to", neighbor.getName()));
             }
         }
+
         return Map.of("nodes", nodes, "edges", edges);
     }
 

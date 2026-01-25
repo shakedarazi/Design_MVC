@@ -19,6 +19,11 @@
     const $ = (sel) => document.querySelector(sel);
     const $$ = (sel) => document.querySelectorAll(sel);
 
+    const STEP_MS = 1000;
+    let q = [];
+    let draining = false;
+    const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+
     async function fetchJson(url) {
         const res = await fetch(url);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -231,8 +236,8 @@
         updateSSEStatus(true);
         eventSource.onmessage = (e) => {
             try {
-                const event = JSON.parse(e.data);
-                addEventToLog(event);
+                q.push(JSON.parse(e.data));
+                if (!draining) drain();
             } catch (err) {
                 console.error('Failed to parse SSE event:', err);
             }
@@ -242,6 +247,22 @@
             updateSSEStatus(false);
         };
     }
+
+    async function drain() {
+        draining = true;
+        while (q.length > 0) {
+            const event = q.shift();
+            addEventToLog(event);
+
+            if (event.from) {
+                highlightNode(event.from);
+            }
+            
+            await sleep(STEP_MS);
+        }
+        draining = false;
+    }
+
 
     function disconnectSSE() {
         if (eventSource) {
