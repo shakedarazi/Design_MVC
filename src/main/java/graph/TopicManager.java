@@ -1,28 +1,22 @@
 package graph;
 
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class TopicManager {
-    private final Map<String, Topic> topics;
+    private final ConcurrentHashMap<String, Topic> topics;
 
     public TopicManager() {
-        this.topics = new HashMap<>();
+        this.topics = new ConcurrentHashMap<>();
     }
 
     public Topic getTopic(String name) {
-        Topic existing = topics.get(name);
-        if (existing != null) {
-            return existing;
-        }
-        Topic created = new Topic(name);
-        topics.put(name, created);
-        return created;
+        return topics.computeIfAbsent(name, Topic::new);
     }
 
     public Collection<Topic> getTopics() {
-        return topics.values();
+        return List.copyOf(topics.values());
     }
 
     public void clear() {
