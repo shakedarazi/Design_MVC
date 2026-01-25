@@ -147,7 +147,7 @@ function highlightCleared(nodeId) {
 }
 
 function updateTopicValue(nodeId, value) {
-    if (!nodeId.startsWith('T')) return;
+    // Caller (drain) already filters by TOPIC_PUBLISH/TOPIC_CLEARED event types
     topicValues.set(nodeId, value);
     const node = cy.getElementById(nodeId);
     if (node.length === 0) return;

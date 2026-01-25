@@ -198,7 +198,7 @@ public class ApiController {
 
         for (Node node : g) {
             String id = node.getName();
-            String kind = id.startsWith("T") ? "TOPIC" : "AGENT";
+            String kind = node.getKind();
             nodes.add(Map.of("id", id, "kind", kind));
         }
 

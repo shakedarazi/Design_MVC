@@ -10,7 +10,7 @@ export const GRAPH_STYLE = [
             'label': 'data(label)',
             'text-valign': 'center',
             'text-halign': 'center',
-            'font-size': '11px',
+            'font-size': '13px',
             'font-weight': '600',
             'color': '#ffffff',
             'text-outline-color': '#000000',

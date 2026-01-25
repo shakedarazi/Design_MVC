@@ -8,6 +8,7 @@ import java.util.Set;
 
 public class Node {
     private String name;
+    private String kind;  // "TOPIC" or "AGENT"
     private List<Node> edges;
     private Message message;
 
@@ -22,6 +23,14 @@ public class Node {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getKind() {
+        return kind;
+    }
+
+    public void setKind(String kind) {
+        this.kind = kind;
     }
 
     public List<Node> getEdges() {
