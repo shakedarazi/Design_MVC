@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MVC Dataflow Visualizer</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
     <script src="https://unpkg.com/cytoscape/dist/cytoscape.min.js"></script>
 </head>
@@ -41,10 +42,6 @@ D</textarea>
                     <input type="text" id="pub-value" value="5" placeholder="Value">
                 </div>
                 <button id="publish-btn">Publish</button>
-                <div class="btn-row quick-btns">
-                    <button id="quick-a">A = 5</button>
-                    <button id="quick-b">B = 8</button>
-                </div>
             </section>
 
             <section class="panel-section">
@@ -67,6 +64,6 @@ D</textarea>
         </aside>
     </div>
 
-    <script src="app.js"></script>
+    <script type="module" src="app.js"></script>
 </body>
 </html>
