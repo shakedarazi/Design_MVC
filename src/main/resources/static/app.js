@@ -7,6 +7,7 @@
         TOPICS: '/api/topics',
         GRAPH: '/api/graph',
         PUBLISH: (topic) => `/api/topics/${topic}/publish`,
+        CLEAR: (topic) => `/api/topics/${topic}/clear`,
         EVENTS_STREAM: '/api/events/stream'
     };
 
@@ -165,7 +166,11 @@
             if (data.topics && data.topics.length > 0) {
                 for (const t of data.topics) {
                     const li = document.createElement('li');
-                    li.textContent = t;
+                    li.innerHTML = `<span>${t}</span> <button class="clear-btn" data-topic="${t}">Clear</button>`;
+                    li.querySelector('.clear-btn').addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        clearTopic(e.target.dataset.topic);
+                    });
                     list.appendChild(li);
                 }
             } else {
@@ -326,6 +331,17 @@
             await postJson(API.PUBLISH(topic), { type: 'double', value: String(value) });
         } catch (err) {
             showError('Publish failed: ' + err.message);
+        }
+    }
+
+    async function clearTopic(topic) {
+        try {
+            const result = await postJson(API.CLEAR(topic), {});
+            if (!result.ok) {
+                showError('Clear failed: ' + (result.error || 'unknown'));
+            }
+        } catch (err) {
+            showError('Clear topic failed: ' + err.message);
         }
     }
 

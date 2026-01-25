@@ -58,4 +58,13 @@ public class BinOpAgent implements Agent {
     @Override
     public void close() {
     }
+
+    @Override
+    public void onClearInput(String topic) {
+        if (topic.equals(in1Topic)) {
+            hasX = false;
+        } else if (topic.equals(in2Topic)) {
+            hasY = false;
+        }
+    }
 }

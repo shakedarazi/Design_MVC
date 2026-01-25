@@ -35,4 +35,9 @@ public class IncAgent implements Agent {
     @Override
     public void close() {
     }
+
+    @Override
+    public void onClearInput(String topic) {
+        // Stateless agent - nothing to clear
+    }
 }

@@ -53,4 +53,13 @@ public class PlusAgent implements Agent {
     @Override
     public void close() {
     }
+
+    @Override
+    public void onClearInput(String topic) {
+        if (topic.equals(subs[0])) {
+            hasX = false;
+        } else if (topic.equals(subs[1])) {
+            hasY = false;
+        }
+    }
 }

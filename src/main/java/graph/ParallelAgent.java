@@ -82,4 +82,9 @@ public final class ParallelAgent implements Agent {
         }
         agent.close();
     }
+
+    @Override
+    public void onClearInput(String topic) {
+        agent.onClearInput(topic);
+    }
 }

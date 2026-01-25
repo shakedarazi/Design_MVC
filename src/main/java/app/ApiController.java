@@ -5,6 +5,7 @@ import configs.Graph;
 import configs.Node;
 import graph.Message;
 import graph.Topic;
+import graph.TopicEventListener;
 import graph.TopicManagerSingleton;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
@@ -32,7 +33,8 @@ public class ApiController {
     }
 
     public enum EventType {
-        TOPIC_PUBLISH
+        TOPIC_PUBLISH,
+        TOPIC_CLEARED
     }
 
     private static final class EventBus {
@@ -90,13 +92,25 @@ public class ApiController {
             gc.create();
             activeConfig = gc;
 
-            Topic.setListener((topicName, msg) -> {
-                Double v = Double.isNaN(msg.asDouble) ? null : msg.asDouble;
-                EventBus.emit(new FlowEvent(
-                        System.currentTimeMillis(),
-                        EventType.TOPIC_PUBLISH,
-                        "T" + topicName,
-                        v));
+            Topic.setListener(new TopicEventListener() {
+                @Override
+                public void onPublish(String topicName, Message msg) {
+                    Double v = Double.isNaN(msg.asDouble) ? null : msg.asDouble;
+                    EventBus.emit(new FlowEvent(
+                            System.currentTimeMillis(),
+                            EventType.TOPIC_PUBLISH,
+                            "T" + topicName,
+                            v));
+                }
+
+                @Override
+                public void onClear(String topicName) {
+                    EventBus.emit(new FlowEvent(
+                            System.currentTimeMillis(),
+                            EventType.TOPIC_CLEARED,
+                            "T" + topicName,
+                            null));
+                }
             });
 
             List<String> topicNames = new ArrayList<>();
@@ -137,6 +151,19 @@ public class ApiController {
 
         TopicManagerSingleton.get().getTopic(name).publish(msg);
 
+        return Map.of("ok", true);
+    }
+
+    @PostMapping("/topics/{name}/clear")
+    public Map<String, Object> clearTopic(@PathVariable String name) {
+        if (activeConfig == null) {
+            return Map.of("ok", false, "error", "No active config loaded");
+        }
+        Topic topic = TopicManagerSingleton.get().getTopic(name);
+        if (topic.subs.isEmpty() && topic.pubs.isEmpty()) {
+            return Map.of("ok", false, "error", "Topic not found");
+        }
+        topic.clear();
         return Map.of("ok", true);
     }
 

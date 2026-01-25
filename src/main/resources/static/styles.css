@@ -245,6 +245,24 @@ button:active {
     border-radius: 4px;
     margin-bottom: 0.25rem;
     font-family: monospace;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.clear-btn {
+    margin-left: 8px;
+    padding: 2px 6px;
+    font-size: 11px;
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+}
+
+.clear-btn:hover {
+    color: var(--error);
+    border-color: var(--error);
 }
 
 #event-log {

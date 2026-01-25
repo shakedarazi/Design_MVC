@@ -48,4 +48,13 @@ public class Topic {
     public void removePublisher(Agent agent) {
         pubs.remove(agent);
     }
+
+    public void clear() {
+        if (listener != null) {
+            listener.onClear(name);
+        }
+        for (Agent agent : subs) {
+            agent.onClearInput(name);
+        }
+    }
 }
