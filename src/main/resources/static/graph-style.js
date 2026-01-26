@@ -10,7 +10,7 @@ export const GRAPH_STYLE = [
             'label': 'data(label)',
             'text-valign': 'center',
             'text-halign': 'center',
-            'font-size': '17px',    
+            'font-size': '19px',    
             'font-weight': '600',
             'color': '#ffffff',
             'text-outline-color': '#000000',
@@ -31,7 +31,9 @@ export const GRAPH_STYLE = [
             'background-opacity': 0.9,
             'border-width': 3,
             'border-color': '#6b7280',
-            'shape': 'ellipse'
+            'shape': 'ellipse',
+            'width': 80,   // ADD: larger width
+            'height': 80 
         }
     },
     // Agent nodes - blue rounded rectangle
@@ -43,8 +45,8 @@ export const GRAPH_STYLE = [
             'border-width': 3,
             'border-color': '#58a6ff',
             'shape': 'round-rectangle',
-            'width': 90,
-            'height': 50
+            'width': 100,
+            'height': 60
         }
     },
     // MulAgent - blue
