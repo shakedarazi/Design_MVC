@@ -9,6 +9,7 @@ import java.util.Set;
 public class Node {
     private String name;
     private String kind;  // "TOPIC" or "AGENT"
+    private String label; // Display text (optional, defaults to name)
     private List<Node> edges;
     private Message message;
 
@@ -31,6 +32,14 @@ public class Node {
 
     public void setKind(String kind) {
         this.kind = kind;
+    }
+
+    public String getLabel() {
+        return label != null ? label : name;
+    }
+
+    public void setLabel(String label) {
+        this.label = label;
     }
 
     public List<Node> getEdges() {

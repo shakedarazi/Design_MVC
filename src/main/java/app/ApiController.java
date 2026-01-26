@@ -76,83 +76,29 @@ public class ApiController {
         }
     }
 
-    // #region debug log helper
-    private void debugLog(String location, String message, String data) {
-        try {
-            String logPath = "c:\\Users\\shaked arazi\\Desktop\\Projects\\Design_MVC\\.cursor\\debug.log";
-            String json = String.format(
-                    "{\"location\":\"%s\",\"message\":\"%s\",\"data\":%s,\"timestamp\":%d,\"sessionId\":\"debug-session\"}%n",
-                    location, message, data, System.currentTimeMillis());
-            java.nio.file.Files.writeString(java.nio.file.Path.of(logPath), json,
-                    java.nio.file.StandardOpenOption.CREATE, java.nio.file.StandardOpenOption.APPEND);
-        } catch (Exception ignored) {
-        }
-    }
-    // #endregion
-
     @PostMapping("/config/load")
     public Map<String, Object> loadConfig(@RequestBody ConfigLoadRequest request) {
         try {
-            // #region agent log H1
-            debugLog("ApiController:loadConfig:entry", "loadConfig called",
-                    String.format("{\"activeConfigNull\":%b,\"topicCountBefore\":%d}",
-                            activeConfig == null, TopicManagerSingleton.get().getTopics().size()));
-            // #endregion
-
-            // FIX: ALWAYS clear TopicManager before loading new config
+            // Clear any existing config
             if (activeConfig != null) {
                 activeConfig.close();
                 activeConfig = null;
             }
             TopicManagerSingleton.get().clear();
 
-            // #region agent log H4
-            debugLog("ApiController:loadConfig:afterClear", "TopicManager cleared",
-                    String.format("{\"topicCountAfterClear\":%d}", TopicManagerSingleton.get().getTopics().size()));
-            // #endregion
-
             Path tempFile = Files.createTempFile("config", ".txt");
             Files.writeString(tempFile, request.configText());
 
             GenericConfig gc = new GenericConfig();
             gc.setConfFile(tempFile.toString());
-            // #region agent log H2
-            debugLog("ApiController:loadConfig:beforeCreate", "About to call gc.create()", "{}");
-            // #endregion
             gc.create();
-            // #region agent log H2
-            StringBuilder topicsCreated = new StringBuilder();
-            for (Topic t : TopicManagerSingleton.get().getTopics()) {
-                topicsCreated.append(t.name).append(",");
-            }
-            debugLog("ApiController:loadConfig:afterCreate", "gc.create() completed",
-                    String.format("{\"topicCount\":%d,\"topics\":\"%s\"}",
-                            TopicManagerSingleton.get().getTopics().size(), topicsCreated.toString()));
-            // #endregion
 
-            // #region agent log H3 - Cycle detection (now enforced)
+            // Cycle detection
             Graph cycleCheckGraph = new Graph();
             cycleCheckGraph.createFromTopics();
-            boolean hasCyclesResult = cycleCheckGraph.hasCycles();
-            StringBuilder edgesStr = new StringBuilder();
-            for (Node n : cycleCheckGraph) {
-                edgesStr.append(n.getName()).append("->[");
-                for (Node e : n.getEdges())
-                    edgesStr.append(e.getName()).append(",");
-                edgesStr.append("];");
-            }
-            debugLog("ApiController:loadConfig:cycleCheck", "hasCycles check result",
-                    String.format("{\"hasCycles\":%b,\"nodeCount\":%d,\"edges\":\"%s\"}",
-                            hasCyclesResult, cycleCheckGraph.size(), edgesStr.toString()));
-            // #endregion
-
-            // FIX: Reject config if cycles detected
-            if (hasCyclesResult) {
+            if (cycleCheckGraph.hasCycles()) {
                 gc.close();
                 TopicManagerSingleton.get().clear();
-                // #region agent log - cycle rejected
-                debugLog("ApiController:loadConfig:cycleRejected", "Config rejected due to cycle", "{}");
-                // #endregion
                 throw new IllegalArgumentException("Config contains a cycle - cyclic dependencies are not allowed");
             }
 
@@ -264,7 +210,8 @@ public class ApiController {
         for (Node node : g) {
             String id = node.getName();
             String kind = node.getKind();
-            nodes.add(Map.of("id", id, "kind", kind));
+            String label = node.getLabel();
+            nodes.add(Map.of("id", id, "kind", kind, "label", label));
         }
 
         for (Node node : g) {

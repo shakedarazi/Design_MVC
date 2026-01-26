@@ -76,7 +76,7 @@ async function renderGraph() {
         const elements = [];
         for (const node of data.nodes) {
             const isTopic = node.kind === 'TOPIC';
-            const label = isTopic ? (node.id + '\n—') : node.id;
+            const label = isTopic ? (node.label + '\n—') : node.label;
             elements.push({ data: { id: node.id, kind: node.kind, label: label } });
         }
         for (const edge of data.edges) {

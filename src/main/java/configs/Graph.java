@@ -35,6 +35,7 @@ public class Graph extends ArrayList<Node> {
                 Node agentNode = nodeMap.computeIfAbsent(agentNodeId, id -> {
                     Node n = new Node(id);
                     n.setKind("AGENT");
+                    n.setLabel(sub.getName());
                     return n;
                 });
                 topicNode.addEdge(agentNode);
@@ -45,6 +46,7 @@ public class Graph extends ArrayList<Node> {
                 Node agentNode = nodeMap.computeIfAbsent(agentNodeId, id -> {
                     Node n = new Node(id);
                     n.setKind("AGENT");
+                    n.setLabel(pub.getName());
                     return n;
                 });
                 agentNode.addEdge(topicNode);
