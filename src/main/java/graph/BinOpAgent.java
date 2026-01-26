@@ -30,6 +30,11 @@ public class BinOpAgent implements Agent {
     }
 
     @Override
+    public String getAgentId() {
+        return name + "[" + in1Topic + "," + in2Topic + "->" + outTopic + "]";
+    }
+
+    @Override
     public void reset() {
         x = 0;
         y = 0;
@@ -51,7 +56,7 @@ public class BinOpAgent implements Agent {
         }
         if (hasX && hasY) {
             double r = op.apply(x, y);
-            TopicManagerSingleton.get().getTopic(outTopic).publish(new Message(r), getName());
+            TopicManagerSingleton.get().getTopic(outTopic).publish(new Message(r), getAgentId());
         }
     }
 

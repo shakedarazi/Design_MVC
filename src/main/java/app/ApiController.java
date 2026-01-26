@@ -94,14 +94,22 @@ public class ApiController {
     public Map<String, Object> loadConfig(@RequestBody ConfigLoadRequest request) {
         try {
             // #region agent log H1
-            debugLog("ApiController:loadConfig:entry", "loadConfig called", "{}");
+            debugLog("ApiController:loadConfig:entry", "loadConfig called",
+                    String.format("{\"activeConfigNull\":%b,\"topicCountBefore\":%d}",
+                            activeConfig == null, TopicManagerSingleton.get().getTopics().size()));
             // #endregion
 
+            // FIX: ALWAYS clear TopicManager before loading new config
             if (activeConfig != null) {
                 activeConfig.close();
-                TopicManagerSingleton.get().clear();
                 activeConfig = null;
             }
+            TopicManagerSingleton.get().clear();
+
+            // #region agent log H4
+            debugLog("ApiController:loadConfig:afterClear", "TopicManager cleared",
+                    String.format("{\"topicCountAfterClear\":%d}", TopicManagerSingleton.get().getTopics().size()));
+            // #endregion
 
             Path tempFile = Files.createTempFile("config", ".txt");
             Files.writeString(tempFile, request.configText());
@@ -113,15 +121,29 @@ public class ApiController {
             // #endregion
             gc.create();
             // #region agent log H2
-            debugLog("ApiController:loadConfig:afterCreate", "gc.create() completed", "{}");
+            StringBuilder topicsCreated = new StringBuilder();
+            for (Topic t : TopicManagerSingleton.get().getTopics()) {
+                topicsCreated.append(t.name).append(",");
+            }
+            debugLog("ApiController:loadConfig:afterCreate", "gc.create() completed",
+                    String.format("{\"topicCount\":%d,\"topics\":\"%s\"}",
+                            TopicManagerSingleton.get().getTopics().size(), topicsCreated.toString()));
             // #endregion
 
             // #region agent log H3 - Cycle detection (now enforced)
             Graph cycleCheckGraph = new Graph();
             cycleCheckGraph.createFromTopics();
             boolean hasCyclesResult = cycleCheckGraph.hasCycles();
+            StringBuilder edgesStr = new StringBuilder();
+            for (Node n : cycleCheckGraph) {
+                edgesStr.append(n.getName()).append("->[");
+                for (Node e : n.getEdges())
+                    edgesStr.append(e.getName()).append(",");
+                edgesStr.append("];");
+            }
             debugLog("ApiController:loadConfig:cycleCheck", "hasCycles check result",
-                    String.format("{\"hasCycles\":%b,\"nodeCount\":%d}", hasCyclesResult, cycleCheckGraph.size()));
+                    String.format("{\"hasCycles\":%b,\"nodeCount\":%d,\"edges\":\"%s\"}",
+                            hasCyclesResult, cycleCheckGraph.size(), edgesStr.toString()));
             // #endregion
 
             // FIX: Reject config if cycles detected

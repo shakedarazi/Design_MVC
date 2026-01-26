@@ -21,32 +21,36 @@ public class Graph extends ArrayList<Node> {
     public void createFromTopics() {
         Map<String, Node> nodeMap = new HashMap<>();
         Collection<Topic> topics = TopicManagerSingleton.get().getTopics();
+
         for (Topic topic : topics) {
-            String topicNodeName = topic.name;
-            Node topicNode = nodeMap.computeIfAbsent(topicNodeName, name -> {
-                Node n = new Node(name);
+            String topicNodeId = topic.name;
+            Node topicNode = nodeMap.computeIfAbsent(topicNodeId, id -> {
+                Node n = new Node(id);
                 n.setKind("TOPIC");
                 return n;
             });
+
             for (Agent sub : topic.subs) {
-                String agentNodeName =sub.getName();
-                Node agentNode = nodeMap.computeIfAbsent(agentNodeName, name -> {
-                    Node n = new Node(name);
+                String agentNodeId = sub.getAgentId();
+                Node agentNode = nodeMap.computeIfAbsent(agentNodeId, id -> {
+                    Node n = new Node(id);
                     n.setKind("AGENT");
                     return n;
                 });
                 topicNode.addEdge(agentNode);
             }
+
             for (Agent pub : topic.pubs) {
-                String agentNodeName =pub.getName();
-                Node agentNode = nodeMap.computeIfAbsent(agentNodeName, name -> {
-                    Node n = new Node(name);
+                String agentNodeId = pub.getAgentId();
+                Node agentNode = nodeMap.computeIfAbsent(agentNodeId, id -> {
+                    Node n = new Node(id);
                     n.setKind("AGENT");
                     return n;
                 });
                 agentNode.addEdge(topicNode);
             }
         }
+
         this.clear();
         this.addAll(nodeMap.values());
     }

@@ -55,6 +55,11 @@ public final class ParallelAgent implements Agent {
     }
 
     @Override
+    public String getAgentId() {
+        return agent.getAgentId();
+    }
+
+    @Override
     public void reset() {
         agent.reset();
     }

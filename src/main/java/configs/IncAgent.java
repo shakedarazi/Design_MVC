@@ -21,6 +21,11 @@ public class IncAgent implements Agent {
     }
 
     @Override
+    public String getAgentId() {
+        return "IncAgent[" + String.join(",", subs) + "->" + String.join(",", pubs) + "]";
+    }
+
+    @Override
     public void reset() {
     }
 
@@ -29,7 +34,7 @@ public class IncAgent implements Agent {
         if (Double.isNaN(msg.asDouble)) {
             return;
         }
-        TopicManagerSingleton.get().getTopic(pubs[0]).publish(new Message(msg.asDouble + 1), getName());
+        TopicManagerSingleton.get().getTopic(pubs[0]).publish(new Message(msg.asDouble + 1), getAgentId());
     }
 
     @Override

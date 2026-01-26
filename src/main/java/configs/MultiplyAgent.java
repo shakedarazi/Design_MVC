@@ -26,6 +26,11 @@ public class MultiplyAgent implements Agent {
     }
 
     @Override
+    public String getAgentId() {
+        return "MultiplyAgent[" + String.join(",", subs) + "->" + String.join(",", pubs) + "]";
+    }
+
+    @Override
     public void reset() {
         x = 0;
         y = 0;
@@ -46,7 +51,7 @@ public class MultiplyAgent implements Agent {
             hasY = true;
         }
         if (hasX && hasY) {
-            TopicManagerSingleton.get().getTopic(pubs[0]).publish(new Message(x * y), getName());
+            TopicManagerSingleton.get().getTopic(pubs[0]).publish(new Message(x * y), getAgentId());
         }
     }
 
