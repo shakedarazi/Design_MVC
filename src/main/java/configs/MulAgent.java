@@ -4,7 +4,7 @@ import graph.Agent;
 import graph.Message;
 import graph.TopicManagerSingleton;
 
-public class MultiplyAgent implements Agent {
+public class MulAgent implements Agent {
     private final String[] subs;
     private final String[] pubs;
     private double x;
@@ -12,7 +12,7 @@ public class MultiplyAgent implements Agent {
     private boolean hasX;
     private boolean hasY;
 
-    public MultiplyAgent(String[] subs, String[] pubs) {
+    public MulAgent(String[] subs, String[] pubs) {
         this.subs = subs;
         this.pubs = pubs;
         TopicManagerSingleton.get().getTopic(subs[0]).subscribe(this);
@@ -22,12 +22,12 @@ public class MultiplyAgent implements Agent {
 
     @Override
     public String getName() {
-        return "MultiplyAgent";
+        return "MulAgent";
     }
 
     @Override
     public String getAgentId() {
-        return "MultiplyAgent[" + String.join(",", subs) + "->" + String.join(",", pubs) + "]";
+        return "MulAgent[" + String.join(",", subs) + "->" + String.join(",", pubs) + "]";
     }
 
     @Override

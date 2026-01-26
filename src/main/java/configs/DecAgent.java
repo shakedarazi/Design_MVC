@@ -4,11 +4,11 @@ import graph.Agent;
 import graph.Message;
 import graph.TopicManagerSingleton;
 
-public class DecrementAgent implements Agent {
+public class DecAgent implements Agent {
     private final String[] subs;
     private final String[] pubs;
 
-    public DecrementAgent(String[] subs, String[] pubs) {
+    public DecAgent(String[] subs, String[] pubs) {
         this.subs = subs;
         this.pubs = pubs;
         TopicManagerSingleton.get().getTopic(subs[0]).subscribe(this);
@@ -17,12 +17,12 @@ public class DecrementAgent implements Agent {
 
     @Override
     public String getName() {
-        return "DecrementAgent";
+        return "DecAgent";
     }
 
     @Override
     public String getAgentId() {
-        return "DecrementAgent[" + String.join(",", subs) + "->" + String.join(",", pubs) + "]";
+        return "DecAgent[" + String.join(",", subs) + "->" + String.join(",", pubs) + "]";
     }
 
     @Override

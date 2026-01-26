@@ -10,7 +10,7 @@ export const GRAPH_STYLE = [
             'label': 'data(label)',
             'text-valign': 'center',
             'text-halign': 'center',
-            'font-size': '13px',
+            'font-size': '17px',    
             'font-weight': '600',
             'color': '#ffffff',
             'text-outline-color': '#000000',
@@ -23,14 +23,14 @@ export const GRAPH_STYLE = [
             'transition-duration': '0.2s'
         }
     },
-    // Topic nodes - green ellipse
+    // Topic nodes - dark gray ellipse
     {
         selector: 'node[kind="TOPIC"]',
         style: {
-            'background-color': '#238636',
+            'background-color': '#4b5563',
             'background-opacity': 0.9,
             'border-width': 3,
-            'border-color': '#3fb950',
+            'border-color': '#6b7280',
             'shape': 'ellipse'
         }
     },
@@ -45,6 +45,39 @@ export const GRAPH_STYLE = [
             'shape': 'round-rectangle',
             'width': 90,
             'height': 50
+        }
+    },
+    // MulAgent - blue
+    {
+        selector: 'node[label="MulAgent"]',
+        style: {
+            'background-color': '#1f6feb',
+            'border-color': '#58a6ff'
+        }
+    },
+    // PlusAgent - yellow
+    {
+        selector: 'node[label="PlusAgent"]',
+        style: {
+            'background-color': '#ffd700',
+            'border-color': '#ffed4e'
+        }
+    },
+    // IncAgent - green
+    {
+        selector: 'node[label="IncAgent"]',
+        style: {
+            'background-color': '#238636',
+            'border-color': '#3fb950',
+            'color': '#ffffff'  // white text on green background
+        }
+    },
+    // DecAgent - red
+    {
+        selector: 'node[label="DecAgent"]',
+        style: {
+            'background-color': '#dc3545',
+            'border-color': '#ff6b7a'
         }
     },
     // Highlight: active (TOPIC_PUBLISH, AGENT_PUBLISH)

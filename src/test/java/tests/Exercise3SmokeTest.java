@@ -24,12 +24,21 @@ public class Exercise3SmokeTest {
             }
 
             @Override
+            public String getAgentId() {
+                return "ResultAgent";
+            }
+
+            @Override
             public void reset() {
             }
 
             @Override
             public void callback(String topic, Message msg) {
                 result[0] = msg.asDouble;
+            }
+
+            @Override
+            public void onClearInput(String topic) {
             }
 
             @Override

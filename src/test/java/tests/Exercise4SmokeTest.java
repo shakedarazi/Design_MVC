@@ -36,12 +36,21 @@ public class Exercise4SmokeTest {
             }
 
             @Override
+            public String getAgentId() {
+                return "CaptureAgent";
+            }
+
+            @Override
             public void reset() {
             }
 
             @Override
             public void callback(String topic, Message msg) {
                 captured[0] = msg.asDouble;
+            }
+
+            @Override
+            public void onClearInput(String topic) {
             }
 
             @Override
