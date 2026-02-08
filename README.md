@@ -1,107 +1,139 @@
 # Event-Driven DAG Computation Engine
 
-A deterministic, configuration-driven computation engine that models computation as an event-driven **Directed Acyclic Graph (DAG)**.
+A **configuration-driven, event-driven computation engine** that models computation as an explicit **Directed Acyclic Graph (DAG)** of Topics and Agents.
 
-This project demonstrates how **architectural constraints** (DAG enforcement, stateless agents, strict separation of concerns) can be used to build predictable, debuggable, and extensible systems.
+The project explores how **strong architectural constraints** (DAG enforcement, explicit dataflow, isolated execution units, and separation of concerns) can significantly improve **reasoning, debuggability, and correctness** in event-driven systems.
 
 ---
 
 ## Why This Project Exists
 
-Event-driven systems often become hard to reason about due to:
+Event-driven systems often become difficult to reason about due to:
 
-- Hidden mutable state
-- Cyclic dependencies and feedback loops
-- Tight coupling between logic, execution, and presentation
-- Non-deterministic execution paths
+- Implicit mutable state hidden inside callbacks
+- Cyclic dependencies and uncontrolled feedback loops
+- Tight coupling between computation, orchestration, and presentation
+- Execution behavior that depends on timing and scheduling rather than structure
 
-This project explores an alternative design:
+This project explores an alternative design philosophy:
 
-> **Treat the computation graph itself as a first-class architectural constraint.**
+> **Make the computation graph an explicit, validated, first-class architectural artifact.**
 
-By enforcing a DAG and keeping computation units stateless, the system guarantees deterministic execution and termination.
+Instead of relying on conventions or discipline, the system enforces structural constraints up-front and pushes complexity to **configuration validation time**, not runtime.
 
 ---
 
 ## Core Architectural Decisions
 
-- **DAG enforced at load time**  
-  Graph configurations are validated using DFS; cyclic graphs are rejected before execution.
+### DAG enforced at load time
+- Graph topology is derived from configuration and validated using **DFS-based cycle detection**
+- Cyclic graphs are rejected **before any execution begins**
+- This guarantees termination and prevents feedback loops by construction
 
-- **Stateless computation units (Agents)**  
-  Agents contain no hidden or persistent state, enabling deterministic replay and easier testing.
+### Explicit computation units (Agents)
+- Agents implement a narrow computation interface
+- Inputs and outputs are explicit via Topics
+- No implicit coupling between agents
 
-- **Explicit fan-in / fan-out modeling**  
-  Agents may wait for multiple inputs (fan-in) or broadcast to multiple downstream consumers (fan-out).
+> Note: Some agents maintain **explicit, local input state** (e.g. fan-in agents).  
+> State is intentionally visible and bounded, not hidden in global context.
 
-- **Configuration-driven composition**  
-  Graph topology is defined declaratively at runtime; behavior is decoupled from wiring.
+### Explicit fan-in / fan-out modeling
+- Fan-out: Topics broadcast events to multiple downstream Agents
+- Fan-in: Agents may wait for multiple required inputs before publishing results
+- Dependencies are structural, not temporal
 
-- **Strict MVC separation**  
-  The domain model is completely unaware of HTTP, JSON, or UI concerns.
+### Configuration-driven composition
+- Graph structure is defined declaratively at runtime
+- Wiring is completely decoupled from agent implementation
+- Agents are instantiated dynamically via reflection
+
+### Strict MVC separation
+- **Model**: Topics, Agents, Graph, execution semantics
+- **Controller**: REST API for loading config and publishing events
+- **View**: Cytoscape.js visualization driven via SSE
+- The domain model is unaware of HTTP, JSON, or UI concerns
 
 ---
 
 ## Core Concepts
 
 ### Topics
-- Named, stateless communication channels
-- Fan-out messages to subscribed Agents
-- Do not store message history
-- Managed centrally via a TopicManager (shared registry)
+- Named, stateless pub/sub channels
+- Fan-out events synchronously to subscribed Agents
+- Do **not** persist message history
+- Managed centrally via a shared TopicManager registry
 
 ### Agents
-- Stateless processors reacting to incoming events
+- Reactive computation units
 - Subscribe to input Topics and publish to output Topics
-- Execute logic only when all required inputs are available
-- Identified deterministically based on configuration (not memory identity)
+- Execution is driven purely by events, not direct invocation
+- Each Agent instance is uniquely identified by configuration
 
 ### Events
-- Immutable messages
-- Propagate synchronously within a Topic
-- Cascading execution completes before control returns to the publisher
+- Immutable payloads
+- Delivered synchronously at the Topic level
+- Cascading execution is structurally bounded by the DAG
 
 ---
 
 ## Execution Model (High-Level)
 
-1. Load configuration file
-2. Validate graph is a DAG (cycle detection via DFS)
-3. Instantiate Agents using reflection
-4. Wrap Agents with a concurrency decorator
-5. Publish input events
-6. Deterministic cascade of computations
-7. Guaranteed termination due to DAG constraint
+1. Load textual configuration
+2. Instantiate Agents via reflection
+3. Wire Agents and Topics into a bipartite graph
+4. Validate acyclicity (fail-fast)
+5. Wrap Agents with an execution decorator
+6. Publish input events via REST
+7. Event-driven cascade across the graph
+8. Guaranteed termination due to DAG constraint
+
+---
+
+## Concurrency Model
+
+- Each Agent is wrapped using an **Active Object–style decorator**
+- A **dedicated worker thread + bounded queue** serializes execution **per Agent**
+- This provides:
+  - Isolation between Agents
+  - Predictable, per-Agent execution semantics
+  - Backpressure via bounded queues
+
+Important clarification:
+
+> **The system does not guarantee a globally deterministic execution order across Agents.**  
+> Determinism is structural (DAG correctness, termination) and **per-Agent**, not system-wide scheduling.
+
+This trade-off is intentional and explicit.
 
 ---
 
 ## Design Patterns in Practice
 
-This project focuses on **pattern composition**, not pattern collection.
+This project emphasizes **composing patterns to enforce constraints**, not showcasing patterns in isolation.
 
 - **Publish–Subscribe**  
-  Topics notify subscribed Agents without knowing their concrete types.
+  Topics notify subscribed Agents without coupling.
 
 - **Strategy**  
-  Each Agent implements a shared interface while encapsulating a specific computation strategy.
+  Each Agent encapsulates a specific computation behind a common interface.
 
 - **Decorator + Active Object**  
-  Agents are wrapped to execute asynchronously without modifying their core logic.
+  Execution concerns (threads, queues) are separated from business logic.
 
 - **Factory (Reflection-Based)**  
-  Agents are instantiated dynamically from configuration files at runtime.
+  Agents are instantiated dynamically from configuration.
 
 - **Singleton**  
-  A single TopicManager instance enforces a consistent global Topic namespace.
+  TopicManager enforces a consistent global Topic namespace.
 
 - **Flyweight (Partial)**  
   Topics are shared by name to preserve identity and consistency.
 
 - **Facade**  
-  A REST controller exposes a simplified API over complex graph construction and execution.
+  REST controller exposes a simplified interface over complex internal orchestration.
 
 ---
-
 ## Example Configuration
 
 ```text
@@ -114,63 +146,65 @@ S
 S1
 ```
 
-This configuration defines a simple computation chain:
-
-- Inputs **A** and **B** are summed by `PlusAgent`
-- The result is published to Topic **S`
-- `IncAgent` consumes **S**, increments the value, and publishes **S1**
-- Each step is triggered purely by events, without direct coupling between components
-
 ## What This Project Demonstrates
 
 - **Architectural constraint design**  
-  DAG enforcement as a rule, not a convention
+  Correctness via enforced structure, not convention
 
-- **Deterministic event-driven systems**  
-  Same inputs always produce the same execution path and outputs
-
-- **Clean separation of concerns (MVC)**  
-  Domain model, controller, and view are strictly isolated
-
-- **Practical use of classic design patterns**  
-  Strategy, Decorator, Factory, Active Object, Publish–Subscribe
-
-- **Safe concurrency**  
-  Message queues and worker threads via Decorator + Active Object
+- **Explicit dataflow modeling**  
+  Computation expressed as a graph, not ad-hoc callbacks
 
 - **Fail-fast validation**  
-  Configuration errors are detected before execution begins
+  Invalid configurations are rejected before execution
+
+- **Isolated execution units**  
+  Per-Agent serialized execution with backpressure
+
+- **Clean separation of concerns (MVC)**  
+  Domain, control, and presentation layers are isolated
+
+- **Operational visibility**  
+  Live event streaming and graph visualization via SSE
+
+---
 
 ## Trade-offs & Limitations
 
 - No feedback loops or iterative algorithms (by design)
-- Single-process execution (JVM-local)
+- No global execution ordering guarantees
+- Single-process (JVM-local) runtime
 - No persistence or event replay
-- Synchronous delivery within a Topic
+- At-most-once delivery semantics
 
-These trade-offs are intentional and favor **predictability and debuggability**
-over raw expressiveness.
+These trade-offs intentionally favor **structural correctness, clarity, and debuggability**
+over maximal expressiveness or throughput.
+
+---
 
 ## Potential Extensions
 
-- Asynchronous Topics (non-blocking fan-out)
-- Distributed Topics (Kafka / message brokers)
-- Stateful Agents with explicit lifecycle and serialization
+- Deterministic schedulers / topological execution
+- Distributed Topics (Kafka / Redis Streams)
+- Explicit stateful Agents with lifecycle management
 - Retry policies and dead-letter Topics
-- Runtime metrics and critical-path visualization
+- Metrics, tracing, and critical-path analysis
 - Static configuration analysis and linting
+
+---
 
 ## Intended Audience
 
 This project is intended as:
 
-- A learning tool for **event-driven architecture**
-- A portfolio demonstration of **architectural thinking**
-- A foundation for more advanced **computation or workflow engines**
+- A learning tool for **event-driven and dataflow architectures**
+- A portfolio demonstration of **system-level architectural thinking**
+- A foundation for more advanced **workflow or orchestration engines**
+
+---
 
 ## Key Takeaway
 
-> **Constraining a system correctly often matters more than adding features.**
+> **Constraining a system correctly often matters more than making it more powerful.**
 
-This project shows how enforcing the right constraints can dramatically
-simplify reasoning about complex event-driven behavior.
+This project demonstrates how explicit structure and validation can dramatically
+simplify reasoning about complex, event-driven behavior.
