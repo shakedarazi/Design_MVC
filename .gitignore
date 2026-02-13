@@ -17,3 +17,7 @@ logs/
 .settings/
 docs/
 
+# IDE
+.vscode/
+.idea/
+

@@ -6,6 +6,40 @@ The project explores how **strong architectural constraints** (DAG enforcement, 
 
 ---
 
+## 🚀 How to Run
+
+### Prerequisites
+
+- ☕ [Java 17+](https://adoptium.net/) (or compatible JDK)
+- 📦 [Maven 3.6+](https://maven.apache.org/download.cgi)
+
+### Steps
+
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd Design_MVC
+   ```
+
+2. **Build and start the application**
+   ```bash
+   mvn spring-boot:run
+   ```
+
+3. **Open the UI in your browser**
+   ```
+   http://localhost:8080/
+   ```
+
+4. **Use the application**
+   - Click **Load Config** to load the demo computation graph
+   - Enter a topic name (e.g. `A`) and a value (e.g. `5`), then click **Publish**
+   - Watch the graph highlight in real time as events propagate through the DAG
+   - View the **Event Log** panel for a live stream of all system events
+   - Click **Clear** on any topic to reset its value and observe downstream effects
+
+---
+
 ## 🎯 Why This Project Exists
 
 Event-driven systems often become difficult to reason about due to:
