@@ -1,12 +1,7 @@
 # Build output
 target/
 out/
-*.class
-
-# IDE
-.idea/
-.vscode/
-*.iml
+*.c
 
 # OS
 .DS_Store
