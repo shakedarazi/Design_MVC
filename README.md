@@ -360,7 +360,6 @@ In CascadeGraph, **explicit structure, isolation, and validation** simplify reas
 
 ## ✨ Credits
 
-Designed and implemented by **Shaked Arazi**.
+**Shaked Arazi**.
 
-Architectural design, concurrency model, validation engine, and execution semantics were built with a strong emphasis on structural correctness and explicit dataflow thinking.
 
